@@ -1,0 +1,124 @@
+import java.util.*;
+import java.util.stream.*;
+
+abstract class Product {
+    String productName;
+    double basePrice;
+
+    Product(String productName, double basePrice) {
+        this.productName = productName;
+        this.basePrice = basePrice;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public double getBasePrice() {
+        return basePrice;
+    }
+}
+
+class ElectronicItem extends Product {
+    ElectronicItem(String productName, double basePrice) {
+        super(productName, basePrice);
+    }
+}
+
+class Apparel extends Product {
+    Apparel(String productName, double basePrice) {
+        super(productName, basePrice);
+    }
+}
+
+class FoodItem extends Product {
+    FoodItem(String productName, double basePrice) {
+        super(productName, basePrice);
+    }
+}
+
+abstract class PlatformUser {
+    String userId;
+
+    PlatformUser(String userId) {
+        this.userId = userId;
+    }
+}
+
+class Shopper extends PlatformUser {
+    List<Product> shoppingCart = new ArrayList<>();
+
+    Shopper(String userId) {
+        super(userId);
+    }
+
+    void addItem(Product item) {
+        shoppingCart.add(item);
+    }
+
+    List<Product> getCartContents() {
+        return shoppingCart;
+    }
+}
+
+class Manager extends PlatformUser {
+    Manager(String userId) {
+        super(userId);
+    }
+}
+
+class PurchaseOrder {
+    List<Product> orderItems;
+
+    PurchaseOrder(List<Product> orderItems) {
+        this.orderItems = orderItems;
+    }
+
+    double calculateSubtotal() {
+        return orderItems.stream()
+                .mapToDouble(Product::getBasePrice)
+                .sum();
+    }
+
+    double applyTaxRate(double taxRate) {
+        return calculateSubtotal() * taxRate;
+    }
+
+    double computeShipping() {
+        return orderItems.size() * 2.5;
+    }
+
+    double computeTotalAmount() {
+        return calculateSubtotal() + applyTaxRate(0.07) + computeShipping();
+    }
+}
+
+public class ShopEasePlatform {
+    public static void main(String[] args) {
+        List<Product> inventory = Arrays.asList(
+                new ElectronicItem("SmartTV", 900),
+                new Apparel("T-Shirt", 25),
+                new FoodItem("Banana", 1.5),
+                new ElectronicItem("Bluetooth Speaker", 120),
+                new FoodItem("Bread", 2.2)
+        );
+
+        List<Product> groceryOnly = inventory.stream()
+                .filter(p -> p instanceof FoodItem)
+                .collect(Collectors.toList());
+
+        List<Product> sortedInventory = inventory.stream()
+                .sorted(Comparator.comparing(Product::getBasePrice))
+                .collect(Collectors.toList());
+
+        Shopper shopper = new Shopper("alice123");
+        shopper.addItem(inventory.get(0));
+        shopper.addItem(inventory.get(2));
+
+        PurchaseOrder order = new PurchaseOrder(shopper.getCartContents());
+        System.out.println("Subtotal: " + order.calculateSubtotal());
+        System.out.println("Tax: " + order.applyTaxRate(0.07));
+        System.out.println("Shipping Fee: " + order.computeShipping());
+        System.out.println("Grand Total: " + order.computeTotalAmount());
+    }
+}
